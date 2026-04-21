@@ -1,6 +1,6 @@
 services:
   php:
-    image: dunglas/frankenphp:php8.3-alpine
+    build: .
     ports:
       - "80:80"
       - "443:443"
@@ -8,13 +8,33 @@ services:
     volumes:
       - ./:/app
     environment:
-      - FRANKENPHP_CONFIG="worker ./public/index.php"
-      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
-      - REDIS_URL=${REDIS_URL}
+      - FRANKENPHP_CONFIG=worker ./public/index.php
+      - FRANKENPHP_WORKER=1
+      - GITHUB_WEBHOOK_SECRET=projeto_livefolio_secret_123
+      - REDIS_URL=redis://redis:6379
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - redis
     tty: true
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: php bin/worker.php
+    volumes:
+      - ./:/app
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
     restart: unless-stopped
