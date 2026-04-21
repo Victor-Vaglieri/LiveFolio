@@ -21,9 +21,33 @@ class GitHubHandler
             return;
         }
 
-        // TODO: Enviar para o Kafka
-        http_response_code(202);
-        echo json_encode(['status' => 'Event received and validation passed']);
+        $urlDoRedis = $_ENV['REDIS_URL'] ?? getenv('REDIS_URL') ?: '';
+        
+        if (empty($urlDoRedis)) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Configuração do Redis ausente']);
+            return;
+        }
+
+        try {
+            $produtor = new \App\Messaging\RedisStreamProducer($urlDoRedis);
+            $normalizedHeaders = array_change_key_case($headers, CASE_LOWER);
+            $eventType = $normalizedHeaders['x-github-event'] ?? 'unknown';
+
+            $dadosDoEvento = [
+                'payload' => $payload,
+                'received_at' => date('c'),
+                'event_type' => $eventType
+            ];
+
+            $produtor->produce('github_events_stream', $dadosDoEvento);
+
+            http_response_code(202);
+            echo json_encode(['status' => 'Event received and pushed to stream']);
+        } catch (\Throwable $erro) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Internal server error', 'message' => $erro->getMessage()]);
+        }
     }
 
     private function validateSignature(string $payload, array $headers): bool
