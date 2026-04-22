@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Processing;
 
+use App\Persistence\EventRepository;
+use App\Persistence\RedisProjection;
+
 class EventProcessor
 {
-    /**
-     * Processa um evento individual vindo do Redis
-     */
+    public function __construct(
+        private readonly EventRepository $repository,
+        private readonly RedisProjection $projection
+    ) {}
+
     public function process(string $eventType, array $payload): void
     {
         echo "[SUCCESS] Processando evento: {$eventType}\n";
@@ -20,21 +25,23 @@ class EventProcessor
             return;
         }
 
-        // Decodificar o JSON do payload
         $data = json_decode($payload['payload'] ?? '', true);
         
         if (!$data) {
             echo "[ERRO] Payload inválido\n";
             return;
         }
-
-        // Extrair informações relevantes
         $repo = $data['repository']['full_name'] ?? 'unknown';
         $author = $data['pusher']['name'] ?? 'unknown';
         $branch = $data['ref'] ?? 'unknown';
 
         echo "[SUCCESS] Dados extraídos: Repo: {$repo} | Autor: {$author} | Branch: {$branch}\n";
-        
-        // Aqui na Etapa 3 enviaremos para o PostgreSQL/Redis Projections
+
+        try {
+            $this->repository->save($eventType, $repo, $author, $branch, $data);
+            $this->projection->updateProjections($eventType, $repo, $author, $branch, $data);
+        } catch (\Throwable $e) {
+            echo "[ERRO] Falha na persistência/projeção: " . $e->getMessage() . "\n";
+        }
     }
 }
