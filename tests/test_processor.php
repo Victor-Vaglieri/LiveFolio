@@ -13,7 +13,7 @@ echo "[TEST] Iniciando teste do EventProcessor e Persistência...\n";
 
 try {
     $db = Connection::get();
-    $redisUrl = getenv('REDIS_URL') ?: 'redis://127.0.0.1:6379';
+    $redisUrl = getenv('REDIS_URL') ?: 'redis://127.0.0.1:6379'; // TODO - usar variável de ambiente e não hardcoded
     
     $repository = new EventRepository($db);
     $projection = new RedisProjection($redisUrl);

@@ -14,11 +14,11 @@ class Connection
     public static function get(): PDO
     {
         if (self::$instance === null) {
-            $host = getenv('DB_HOST') ?: '127.0.0.1';
-            $port = getenv('DB_PORT') ?: '5432';
-            $dbName = getenv('DB_NAME') ?: 'livefolio';
-            $user = getenv('DB_USER') ?: 'postgres';
-            $pass = getenv('DB_PASSWORD') ?: 'postgres';
+            $host = getenv('DB_HOST') ?: '127.0.0.1'; // TODO - usar variável de ambiente e não hardcoded
+            $port = getenv('DB_PORT') ?: '5432'; // TODO - usar variável de ambiente e não hardcoded
+            $dbName = getenv('DB_NAME') ?: 'livefolio'; // TODO - usar variável de ambiente e não hardcoded
+            $user = getenv('DB_USER') ?: 'postgres'; // TODO - usar variável de ambiente e não hardcoded
+            $pass = getenv('DB_PASSWORD') ?: 'postgres'; // TODO - usar variável de ambiente e não hardcoded
 
             $dsn = "pgsql:host={$host};port={$port};dbname={$dbName}";
 
