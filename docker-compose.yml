@@ -29,6 +29,11 @@ services:
       - ./:/app
     environment:
       - REDIS_URL=redis://redis:6379
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-livefolio}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
     depends_on:
       - redis
     restart: unless-stopped
