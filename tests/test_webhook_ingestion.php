@@ -16,7 +16,6 @@ $payload = json_encode([
 
         echo "[SUCCESS] Iniciando Teste de Ingestão\n";
 
-        // 1. Simular o Webhook via CURL
         $ch = curl_init('https://localhost/webhook/github');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
@@ -41,14 +40,10 @@ $payload = json_encode([
             exit(1);
         }
 
-        // 2. Verificar no Redis
         echo "[SUCCESS] Verificando se o evento chegou no Redis Stream\n";
         $redis = new Redis();
         try {
-            // Usamos 'redis' como host pois o script rodará dentro do container PHP
             $redis->connect('redis', 6379);
-
-            // Ler o último item do stream
             $events = $redis->xRead(['github_events_stream' => '0'], 1);
 
             if (empty($events)) {
