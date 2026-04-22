@@ -27,9 +27,7 @@ function handleRequest(GitHubHandler $handler): void
     $method = $_SERVER['REQUEST_METHOD'] ?? '';
 
     if ($method === 'POST' && $uri === '/webhook/github') {
-        // Obter headers de forma compatível
         $headers = function_exists('getallheaders') ? getallheaders() : getHeadersFromServer();
-        // error_log("SERVER: " . json_encode($_SERVER));
         $handler->handle(file_get_contents('php://input'), $headers);
     } else {
         http_response_code(404);

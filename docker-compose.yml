@@ -10,8 +10,8 @@ services:
     environment:
       - FRANKENPHP_CONFIG=worker ./public/index.php
       - FRANKENPHP_WORKER=1
-      - GITHUB_WEBHOOK_SECRET=projeto_livefolio_secret_123
-      - REDIS_URL=redis://redis:6379
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - REDIS_URL=${REDIS_URL}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
       - DB_NAME=${DB_NAME}
@@ -19,6 +19,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       - redis
+      - db
     tty: true
     restart: unless-stopped
 
@@ -28,18 +29,51 @@ services:
     volumes:
       - ./:/app
     environment:
-      - REDIS_URL=redis://redis:6379
-      - DB_HOST=${DB_HOST:-db}
-      - DB_PORT=${DB_PORT:-5432}
-      - DB_NAME=${DB_NAME:-livefolio}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - REDIS_URL=${REDIS_URL}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       - redis
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
     restart: unless-stopped
 
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - GITHUB_USERNAME=${GITHUB_USERNAME}
+      - GITHUB_URL=${GITHUB_URL}
+      - LINKEDIN_URL=${LINKEDIN_URL}
+      - LEETCODE_URL=${LEETCODE_URL}
+    depends_on:
+      - redis
+      - db
     restart: unless-stopped

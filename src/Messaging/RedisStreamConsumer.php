@@ -15,9 +15,9 @@ class RedisStreamConsumer
         $this->client = new Redis();
         $config = parse_url($url);
         
-        $host = $config['host'] ?? '127.0.0.1';
-        $port = $config['port'] ?? 6379;
-        $pass = $config['pass'] ?? null;
+        $host = $config['host'] ?? '127.0.0.1'; // TODO - usar variável de ambiente e não hardcoded 
+        $port = $config['port'] ?? 6379; // TODO - usar variável de ambiente e não hardcoded 
+        $pass = $config['pass'] ?? null; // TODO - usar variável de ambiente e não hardcoded
 
         $this->client->connect($host, (int) $port);
         if ($pass) {
@@ -25,12 +25,6 @@ class RedisStreamConsumer
         }
     }
 
-    /**
-     * Lê mensagens do stream. 
-     * @param string $stream Nome do stream
-     * @param string $lastId ID da última mensagem lida (padrão '$' para novas)
-     * @param int $block Tempo em ms para bloquear esperando novas mensagens (0 = infinito)
-     */
     public function consume(string $stream, string $lastId = '0', int $block = 0): array
     {
         $result = $this->client->xRead([$stream => $lastId], 0, $block);
