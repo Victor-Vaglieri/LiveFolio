@@ -16,9 +16,13 @@ class RedisStreamProducer
         
         $configuracao = parse_url($url);
         
-        $host = $configuracao['host'] ?? '127.0.0.1'; // TODO - usar variável de ambiente e não hardcoded
-        $porta = $configuracao['port'] ?? 6379; // TODO - usar variável de ambiente e não hardcoded
-        $senha = $configuracao['pass'] ?? null; // TODO - usar variável de ambiente e não hardcoded
+        $host = $configuracao['host'] ?? null;
+        $porta = $configuracao['port'] ?? 6379;
+        $senha = $configuracao['pass'] ?? null;
+
+        if (!$host) {
+            throw new \RuntimeException("[ERRO] Host do Redis não configurado.");
+        }
 
         $this->client->connect($host, (int) $porta);
 

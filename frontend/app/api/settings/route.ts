@@ -3,7 +3,11 @@ import { db } from '@/lib/db';
 
 export async function POST(req: Request) {
   const { key, value, secret } = await req.json();
-  const adminSecret = process.env.ADMIN_SECRET || 'projeto_livefolio_secret_123'; // TODO - usar variável de ambiente e não hardcoded
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret) {
+    return NextResponse.json({ error: 'ADMIN_SECRET not configured' }, { status: 500 });
+  }
 
   if (secret !== adminSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

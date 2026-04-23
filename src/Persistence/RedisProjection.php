@@ -15,9 +15,13 @@ class RedisProjection
         $this->client = new Redis();
         $config = parse_url($url);
         
-        $host = $config['host'] ?? '127.0.0.1'; // TODO - usar variável de ambiente e não hardcoded 
-        $port = $config['port'] ?? 6379; // TODO - usar variável de ambiente e não hardcoded
-        $pass = $config['pass'] ?? null; // TODO - usar variável de ambiente e não hardcoded
+        $host = $config['host'] ?? null;
+        $port = $config['port'] ?? 6379;
+        $pass = $config['pass'] ?? null;
+
+        if (!$host) {
+            throw new \RuntimeException("[ERRO] Host do Redis não configurado.");
+        }
 
         $this->client->connect($host, (int) $port);
         if ($pass) {

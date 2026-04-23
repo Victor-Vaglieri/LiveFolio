@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$secret = 'projeto_livefolio_secret_123';
+$secret = getenv('GITHUB_WEBHOOK_SECRET') ?: 'projeto_livefolio_secret_123';
+$webhookUrl = getenv('WEBHOOK_URL') ?: 'http://localhost/webhook/github';
 $payloadData = [
     'ref' => 'refs/heads/main',
     'repository' => [
@@ -24,7 +25,7 @@ $signature = 'sha256=' . hash_hmac('sha256', $payload, $secret);
 
 echo "[SUCCESS] Iniciando Teste de Ingestão\n";
 
-$ch = curl_init('https://localhost/webhook/github'); // TODO - corrigir isso quando for para produção
+$ch = curl_init($webhookUrl);
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
