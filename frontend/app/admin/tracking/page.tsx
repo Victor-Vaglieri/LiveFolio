@@ -20,9 +20,9 @@ export default async function AdminTracking({
 }: {
   searchParams: { secret?: string };
 }) {
-  const secret = process.env.ADMIN_SECRET || 'projeto_livefolio_secret_123'; // TODO - usar variável de ambiente e não hardcoded
+  const secret = process.env.ADMIN_SECRET;
   
-  if (searchParams.secret !== secret) {
+  if (!secret || searchParams.secret !== secret) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
@@ -56,6 +56,9 @@ export default async function AdminTracking({
         <StatusManager 
           initialStatus={settings.hire_status || 'available'} 
           initialCompany={settings.company_name || ''} 
+          initialBio={settings.bio || ''}
+          initialRole={settings.role || ''}
+          initialProjects={settings.featured_projects || ''}
           secret={secret} 
         />
       </section>

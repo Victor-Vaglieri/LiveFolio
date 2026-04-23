@@ -11,7 +11,10 @@ export async function initSettingsTable() {
   // Valores padrão
   const defaults = [
     { key: 'hire_status', value: 'available' },
-    { key: 'company_name', value: '' }
+    { key: 'company_name', value: '' },
+    { key: 'bio', value: 'Fullstack Developer & AI Engineering Student. Specialized in event-driven architectures and real-time data pipelines.' },
+    { key: 'role', value: 'Fullstack Developer & AI Engineering Student' },
+    { key: 'featured_projects', value: 'Victor-Vaglieri/LiveFolio,Victor-Vaglieri/AppControle,Victor-Vaglieri/AI-DE-S' }
   ];
 
   for (const item of defaults) {
