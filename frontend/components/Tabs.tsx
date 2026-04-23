@@ -9,7 +9,10 @@ export default function Tabs() {
 
   const files = [
     { name: "about.md", icon: <FileText size={14} className="text-blue-300" />, href: "/" },
+    { name: "projects.md", icon: <FileCode size={14} className="text-green-400" />, href: "/projects" },
+    { name: "stats.json", icon: <FileCode size={14} className="text-yellow-400" />, href: "/stats" },
     { name: "activity.log", icon: <FileCode size={14} className="text-blue-400" />, href: "/activity" },
+    // TODO criar pagina de projetos e adicionar aqui
     { name: "goals.md", icon: <Target size={14} className="text-red-400" />, href: "/goals" },
   ];
 
