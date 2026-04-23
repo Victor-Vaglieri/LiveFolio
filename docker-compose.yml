@@ -26,6 +26,8 @@ services:
   worker:
     build: .
     command: php bin/worker.php
+    healthcheck:
+      disable: true
     volumes:
       - ./:/app
     environment:

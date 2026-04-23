@@ -10,8 +10,13 @@ use App\Database\Connection;
 use App\Persistence\EventRepository;
 use App\Persistence\RedisProjection;
 
-$urlRedis = getenv('REDIS_URL') ?: 'redis://redis:6379';
+$urlRedis = getenv('REDIS_URL');
 $stream = 'github_events_stream';
+
+if (!$urlRedis) {
+    echo "[ERRO] Variável REDIS_URL não configurada.\n";
+    exit(1);
+}
 
 echo "[SUCCESS] Iniciando Worker de Eventos\n";
 echo "[SUCCESS] Conectando ao Redis: {$urlRedis}\n";
@@ -24,7 +29,7 @@ $projection = new RedisProjection($urlRedis);
 
 $processor = new EventProcessor($repository, $projection);
 
-$lastId = '$';
+$lastId = '0'; // Processar desde o início do stream para garantir consistência
 
 while (true) {
     try {
