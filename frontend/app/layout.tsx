@@ -4,10 +4,10 @@ import ActivityBar from "@/components/ActivityBar";
 import StatusBar from "@/components/StatusBar";
 import Tabs from "@/components/Tabs";
 
-const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "Victor-Vaglieri"; // TODO - usar variável de ambiente e não hardcoded
+const GITHUB_USERNAME = process.env.GITHUB_USERNAME;
 
 export const metadata: Metadata = {
-  title: `${GITHUB_USERNAME} | LiveFolio`,
+  title: `${GITHUB_USERNAME || 'Victor Vaglieri'} | LiveFolio`,
   description: "Real-time VS Code style activity portfolio",
 };
 

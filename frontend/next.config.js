@@ -5,10 +5,17 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'github.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'github-production-user-asset-6210df.s3.amazonaws.com',
+        pathname: '**',
       },
     ],
   },
