@@ -1,12 +1,13 @@
-import { Files, Search, GitBranch, LayoutDashboard, Settings, User } from "lucide-react";
+import { Files, GitBranch, LayoutDashboard, Settings, FolderKanban, Target } from "lucide-react";
 import Link from "next/link";
 
 export default function ActivityBar() {
   const items = [
-    { icon: <Files size={24} />, label: "Explorer", href: "/" },
-    { icon: <GitBranch size={24} />, label: "Source Control", href: "/activity" },
+    { icon: <Files size={24} />, label: "Explorer (About)", href: "/" },
+    { icon: <FolderKanban size={24} />, label: "Projects", href: "/projects" },
+    { icon: <GitBranch size={24} />, label: "Source Control (Activity)", href: "/activity" },
     { icon: <LayoutDashboard size={24} />, label: "Stats", href: "/stats" },
-    { icon: <User size={24} />, label: "Profile", href: "/about" },
+    { icon: <Target size={24} />, label: "Goals", href: "/goals" },
   ];
 
   return (

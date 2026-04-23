@@ -3,14 +3,32 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #121314; /* editor.background */
+  --foreground: #BBBEBF; /* editor.foreground */
+
+  --surface: #191A1B;
+  --surface-2: #202122;
+  --border: #2A2B2C;
+
+  --primary: #3994BC;
+  --primary-hover: #2B7DA3;
+
+  --muted: #8C8C8C;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0d1117;
-    --foreground: #c9d1d9;
+    --background: #121314;
+    --foreground: #BBBEBF;
+
+    --surface: #191A1B;
+    --surface-2: #202122;
+    --border: #2A2B2C;
+
+    --primary: #3994BC;
+    --primary-hover: #2B7DA3;
+
+    --muted: #8C8C8C;
   }
 }
 
@@ -18,22 +36,32 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
+/* Scrollbar igual VSCode */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: #83848533; /* scrollbarSlider.background */
+  border-radius: 6px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #444444;
+  background: #83848566; /* hover */
 }
+
+::-webkit-scrollbar-thumb:active {
+  background: #83848599; /* active */
+}
+
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
