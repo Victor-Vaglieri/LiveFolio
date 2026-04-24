@@ -15,12 +15,16 @@ class RedisProjection
         $this->client = new Redis();
         $config = parse_url($url);
         
+        $scheme = $config['scheme'] ?? 'redis';
         $host = $config['host'] ?? null;
         $port = $config['port'] ?? 6379;
         $pass = $config['pass'] ?? null;
 
         if (!$host) {
             throw new \RuntimeException("[ERRO] Host do Redis não configurado.");
+        }
+        if ($scheme === 'rediss' || str_contains($url, 'upstash.io')) {
+            $host = 'tls://' . $host;
         }
 
         $this->client->connect($host, (int) $port);
