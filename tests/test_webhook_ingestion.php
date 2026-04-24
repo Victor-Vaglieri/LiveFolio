@@ -46,6 +46,11 @@ curl_close($ch);
 
 echo "[SUCCESS] Resposta do Servidor: HTTP {$httpCode} - {$response}\n";
 
+if ($httpCode === 429) {
+    echo "[AVISO] Você atingiu o Rate Limit! O backend bloqueou a requisição propositalmente para segurança.\n";
+    exit(0);
+}
+
 if ($httpCode !== 202) {
     echo "[ERRO] O backend não retornou o status 202 (Accepted)\n";
     exit(1);
