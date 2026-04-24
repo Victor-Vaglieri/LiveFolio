@@ -29,7 +29,6 @@ async function getProjectData(repoPath: string): Promise<ProjectData | null> {
       stars: data.stargazers_count,
       language: data.language || "Mixed",
       url: data.html_url,
-      // Usando o serviço de Social Preview do GitHub para a imagem
       image: `https://opengraph.githubassets.com/1/${repoPath.trim()}`
     };
   } catch (e) {
@@ -101,7 +100,7 @@ export default async function ProjectsPage({
                   </div>
                 </div>
 
-                <p className="text-sm text-vscode-text/70 line-clamp-2 leading-relaxed flex-1">
+                <p className="text-sm text-vscode-text/70 leading-relaxed flex-1">
                   {project.description}
                 </p>
 

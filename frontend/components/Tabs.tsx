@@ -8,12 +8,11 @@ export default function Tabs() {
   const pathname = usePathname();
 
   const files = [
-    { name: "about.md", icon: <FileText size={14} className="text-blue-300" />, href: "/" },
-    { name: "projects.md", icon: <FileCode size={14} className="text-green-400" />, href: "/projects" },
-    { name: "stats.json", icon: <FileCode size={14} className="text-yellow-400" />, href: "/stats" },
-    { name: "activity.log", icon: <FileCode size={14} className="text-blue-400" />, href: "/activity" },
-    // TODO criar pagina de projetos e adicionar aqui
-    { name: "goals.md", icon: <Target size={14} className="text-red-400" />, href: "/goals" },
+    { name: "about.md", icon: <FileText size={14} className="text-vscode-icon-md" />, href: "/" },
+    { name: "projects.md", icon: <FileCode size={14} className="text-vscode-icon-code" />, href: "/projects" },
+    { name: "stats.json", icon: <FileCode size={14} className="text-vscode-icon-json" />, href: "/stats" },
+    { name: "activity.log", icon: <FileCode size={14} className="text-vscode-icon-log" />, href: "/activity" },
+    { name: "goals.md", icon: <Target size={14} className="text-vscode-icon-goal" />, href: "/goals" },
   ];
 
   return (

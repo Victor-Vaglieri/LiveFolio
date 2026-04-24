@@ -3,33 +3,34 @@
 @tailwind utilities;
 
 :root {
-  --background: #121314; /* editor.background */
-  --foreground: #BBBEBF; /* editor.foreground */
+  --primary: #2C2D2E;        
+  --primary-hover: #343536;
+  
+  --background: #121314; 
+  --foreground: #BBBEBF; 
 
-  --surface: #191A1B;
-  --surface-2: #202122;
-  --border: #2A2B2C;
+  --surface: #191A1B;    
+  --surface-2: #202122;  
+  --surface-hover: #242526; 
 
-  --primary: #3994BC;
-  --primary-hover: #2B7DA3;
+  --border: #2A2B2C;     
 
-  --muted: #8C8C8C;
-}
+  --text-muted: #8C8C8C; 
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #121314;
-    --foreground: #BBBEBF;
+  --accent: #3994BC;     
+  --accent-hover: #2B7DA3; 
 
-    --surface: #191A1B;
-    --surface-2: #202122;
-    --border: #2A2B2C;
+  --selection: #276782dd; 
 
-    --primary: #3994BC;
-    --primary-hover: #2B7DA3;
-
-    --muted: #8C8C8C;
-  }
+  --success: #73c991;
+  --string: #a5d6ff;
+  
+  --icon-json: #7ee787;  
+  --icon-md: #79c0ff;    
+  --icon-log: #8b949e;   
+  --icon-code: #d2a8ff;  
+  --icon-stats: #ffa657; 
+  --icon-goal: #ff7b72;  
 }
 
 body {
@@ -39,7 +40,7 @@ body {
   overflow: hidden;
 }
 
-/* Scrollbar igual VSCode */
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -50,16 +51,16 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #83848533; /* scrollbarSlider.background */
+  background: #83848533; 
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #83848566; /* hover */
+  background: #83848566; 
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: #83848599; /* active */
+  background: #83848599; 
 }
 
 ::-webkit-scrollbar-corner {

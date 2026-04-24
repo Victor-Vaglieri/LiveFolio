@@ -8,10 +8,10 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const files = [
-    { name: "home.json", icon: <FileJson size={16} className="text-yellow-400" />, href: "/" },
-    { name: "activity.log", icon: <FileCode size={16} className="text-blue-400" />, href: "/activity" },
-    { name: "stats.json", icon: <BarChart2 size={16} className="text-green-400" />, href: "/stats" },
-    { name: "about.md", icon: <FileText size={16} className="text-blue-300" />, href: "/about" },
+    { name: "home.json", icon: <FileJson size={16} className="text-vscode-icon-json" />, href: "/" },
+    { name: "activity.log", icon: <FileCode size={16} className="text-vscode-icon-log" />, href: "/activity" },
+    { name: "stats.json", icon: <BarChart2 size={16} className="text-vscode-icon-stats" />, href: "/stats" },
+    { name: "about.md", icon: <FileText size={16} className="text-vscode-icon-md" />, href: "/about" },
   ];
 
   return (
@@ -31,7 +31,7 @@ export default function Sidebar() {
             <Link 
               key={idx} 
               href={file.href} 
-              className={`flex items-center gap-2 px-5 py-1 text-[13px] hover:bg-vscode-border/40 transition-colors ${pathname === file.href ? 'bg-vscode-tabActive/50' : ''}`}
+              className={`flex items-center gap-2 px-5 py-1 text-[13px] hover:bg-vscode-hover transition-colors ${pathname === file.href ? 'bg-vscode-tabActive' : ''}`}
             >
               {file.icon}
               <span>{file.name}</span>
