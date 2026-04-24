@@ -44,7 +44,17 @@ async function getRepoLanguages(repoFullName: string) {
 async function getLatestEvents() {
   try {
     const events = await redis.lrange('events:latest', 0, 49);
-    return events.map((e) => JSON.parse(e));
+    if (!Array.isArray(events)) return [];
+    
+    return events
+      .map((e) => {
+        try {
+          return e ? JSON.parse(e) : null;
+        } catch (err) {
+          return null;
+        }
+      })
+      .filter((e) => e !== null);
   } catch (e) {
     console.error('[ERRO] Falha ao buscar eventos do Redis:', e);
     return [];

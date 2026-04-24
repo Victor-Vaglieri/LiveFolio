@@ -34,77 +34,96 @@ export default async function AdminTracking({
     );
   }
 
-  await initSettingsTable();
-  const visits = await getVisits();
-  const stats = await getStats();
-  const settings = await getAllSettings();
+  try {
+    await initSettingsTable();
+    const [visits, stats, settings] = await Promise.all([
+      getVisits(),
+      getStats(),
+      getAllSettings(),
+    ]);
 
-  return (
-    <main className="min-h-screen p-8 max-w-6xl mx-auto space-y-12 bg-vscode-bg text-vscode-text">
-      <header className="border-b border-vscode-border pb-8 flex justify-between items-end">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-vscode-highlight">Admin Dashboard</h1>
-          <p className="text-vscode-comment mt-2">Visitor insights and system settings</p>
-        </div>
-      </header>
-
-      {/* System Settings */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Settings className="w-5 h-5 text-vscode-highlight" /> System Settings
-        </h2>
-        <StatusManager 
-          initialStatus={settings.hire_status || 'available'} 
-          initialCompany={settings.company_name || ''} 
-          initialBio={settings.bio || ''}
-          initialRole={settings.role || ''}
-          initialProjects={settings.featured_projects || ''}
-          secret={secret} 
-        />
-      </section>
-
-      {/* Summary Stats */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.source} className="p-4 border border-vscode-border rounded-lg bg-vscode-sidebar/20">
-            <span className="text-xs text-vscode-comment uppercase font-semibold">{stat.source}</span>
-            <div className="text-2xl font-bold mt-1 text-vscode-highlight">{stat.count}</div>
+    return (
+      <main className="min-h-screen p-8 max-w-6xl mx-auto space-y-12 bg-vscode-bg text-vscode-text">
+        <header className="border-b border-vscode-border pb-8 flex justify-between items-end">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-vscode-highlight">Admin Dashboard</h1>
+            <p className="text-vscode-comment mt-2">Visitor insights and system settings</p>
           </div>
-        ))}
-      </section>
+        </header>
 
-      {/* Visits Table */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Table className="w-5 h-5 text-vscode-highlight" /> Detailed Logs
-        </h2>
-        <div className="border border-vscode-border rounded-lg overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-vscode-sidebar/40 text-vscode-comment uppercase text-xs font-medium border-b border-vscode-border">
-              <tr>
-                <th className="px-4 py-3">Source</th>
-                <th className="px-4 py-3">IP</th>
-                <th className="px-4 py-3">Path</th>
-                <th className="px-4 py-3">User Agent</th>
-                <th className="px-4 py-3">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-vscode-border">
-              {visits.map((visit) => (
-                <tr key={visit.id} className="hover:bg-vscode-sidebar/30 transition-colors">
-                  <td className="px-4 py-3 font-medium text-vscode-string">{visit.source}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{visit.ip}</td>
-                  <td className="px-4 py-3">{visit.path}</td>
-                  <td className="px-4 py-3 truncate max-w-xs text-vscode-comment">{visit.user_agent}</td>
-                  <td className="px-4 py-3 text-vscode-comment">
-                    {new Date(visit.created_at).toLocaleString()}
-                  </td>
+        {/* System Settings */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Settings className="w-5 h-5 text-vscode-highlight" /> System Settings
+          </h2>
+          <StatusManager 
+            initialStatus={settings.hire_status || 'available'} 
+            initialCompany={settings.company_name || ''} 
+            initialBio={settings.bio || ''}
+            initialRole={settings.role || ''}
+            initialProjects={settings.featured_projects || ''}
+            secret={secret} 
+          />
+        </section>
+
+        {/* Summary Stats */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat) => (
+            <div key={stat.source} className="p-4 border border-vscode-border rounded-lg bg-vscode-sidebar/20">
+              <span className="text-xs text-vscode-comment uppercase font-semibold">{stat.source}</span>
+              <div className="text-2xl font-bold mt-1 text-vscode-highlight">{stat.count}</div>
+            </div>
+          ))}
+        </section>
+
+        {/* Visits Table */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Table className="w-5 h-5 text-vscode-highlight" /> Detailed Logs
+          </h2>
+          <div className="border border-vscode-border rounded-lg overflow-hidden">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-vscode-sidebar/40 text-vscode-comment uppercase text-xs font-medium border-b border-vscode-border">
+                <tr>
+                  <th className="px-4 py-3">Source</th>
+                  <th className="px-4 py-3">IP</th>
+                  <th className="px-4 py-3">Path</th>
+                  <th className="px-4 py-3">User Agent</th>
+                  <th className="px-4 py-3">Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-  );
+              </thead>
+              <tbody className="divide-y divide-vscode-border">
+                {visits.map((visit) => (
+                  <tr key={visit.id} className="hover:bg-vscode-sidebar/30 transition-colors">
+                    <td className="px-4 py-3 font-medium text-vscode-string">{visit.source}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{visit.ip}</td>
+                    <td className="px-4 py-3">{visit.path}</td>
+                    <td className="px-4 py-3 truncate max-w-xs text-vscode-comment">{visit.user_agent}</td>
+                    <td className="px-4 py-3 text-vscode-comment">
+                      {new Date(visit.created_at).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    );
+  } catch (error) {
+    console.error('[ADMIN ERROR]', error);
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-vscode-bg text-vscode-text p-4">
+        <ShieldCheck className="w-16 h-16 text-red-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Database Error</h1>
+        <p className="text-vscode-comment text-center max-w-md">
+          Could not connect to the database. Please check your environment variables (DB_HOST, DB_USER, etc.) and ensure the database is running.
+        </p>
+        <pre className="mt-4 p-4 bg-black/30 rounded text-xs font-mono text-red-400 max-w-full overflow-auto">
+          {error instanceof Error ? error.message : 'Unknown error'}
+        </pre>
+      </div>
+    );
+  }
+
 }

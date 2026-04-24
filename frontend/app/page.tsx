@@ -86,7 +86,16 @@ async function getSkillsFromREADME() {
 async function getUnifiedData(): Promise<RepoStats> {
   try {
     const redisEvents = await redis.lrange('events:latest', 0, 99);
-    const events = redisEvents.map(e => JSON.parse(e));
+    const events = (Array.isArray(redisEvents) ? redisEvents : [])
+      .map((e) => {
+        try {
+          return e ? JSON.parse(e) : null;
+        } catch {
+          return null;
+        }
+      })
+      .filter((e) => e !== null);
+
     if (events.length < 15) {
       const res = await fetch(`https://api.github.com/search/commits?q=author:${GITHUB_USERNAME}&sort=author-date&order=desc&per_page=50`, {
         headers: { 'Accept': 'application/vnd.github.cloak-preview' },
@@ -135,7 +144,7 @@ export default async function HomePage({ searchParams }: { searchParams: { ref?:
     <div className="max-w-4xl mx-auto py-8 space-y-12 font-sans selection:bg-vscode-highlight/30 text-vscode-text">
       <section className="space-y-6">
         <div className="flex flex-col md:flex-row items-center gap-8 border-b border-vscode-border pb-8">
-          <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-vscode-highlight shadow-xl shadow-vscode-highlight/10">
+          <div className="relative w-48 h-48 rounded-full overflow-hidden border-2 border-vscode-highlight shadow-xl shadow-vscode-highlight/10">
             <img src={ghProfile.avatar_url} alt={ghProfile.name} className="w-full h-full object-cover" />
           </div>
           <div className="text-center md:text-left space-y-4">
@@ -193,29 +202,29 @@ export default async function HomePage({ searchParams }: { searchParams: { ref?:
         <h2 className="text-2xl font-bold border-b border-vscode-border pb-2 text-vscode-highlight">## Performance Analytics</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
-             <h3 className="text-[10px] font-bold text-vscode-comment uppercase tracking-widest flex items-center gap-2"><BarChart3 size={14} /> System Throughput / Repo</h3>
+             <h3 className="text-sm font-bold text-vscode-comment uppercase tracking-widest flex items-center gap-2"><BarChart3 size={14} /> System Throughput / Repo</h3>
              <div className="space-y-3">
                 {Object.entries(repoStats).slice(0, 6).map(([name, count]) => (
                   <div key={name} className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-mono opacity-80"><span>{name}</span><span className="text-vscode-highlight">{count} ops</span></div>
-                    <div className="h-1 bg-vscode-sidebar rounded-full overflow-hidden"><div className="h-full bg-vscode-highlight transition-all" style={{ width: `${(Number(count)/Math.max(totalEvents, 1))*100}%` }} /></div>
+                    <div className="flex justify-between text-[14px] font-mono opacity-80"><span>{name}</span><span className="text-vscode-highlight">{count} ops</span></div>
+                    <div className="h-1.5 bg-vscode-sidebar rounded-full overflow-hidden"><div className="h-full bg-vscode-highlight transition-all" style={{ width: `${(Number(count)/Math.max(totalEvents, 1))*100}%` }} /></div>
                   </div>
                 ))}
              </div>
           </div>
           <div className="space-y-4">
-             <h3 className="text-[10px] font-bold text-vscode-comment uppercase tracking-widest flex items-center gap-2"><Activity size={14} /> System Health & Tech Metrics</h3>
+             <h3 className="text-sm font-bold text-vscode-comment uppercase tracking-widest flex items-center gap-2"><Activity size={14} /> System Health & Tech Metrics</h3>
              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 border border-vscode-border bg-vscode-sidebar/5 rounded-sm"><span className="text-[9px] text-vscode-comment uppercase block">Core Integrity</span><span className="text-xl font-bold text-vscode-success">99.9%</span></div>
-                <div className="p-3 border border-vscode-border bg-vscode-sidebar/5 rounded-sm"><span className="text-[9px] text-vscode-comment uppercase block">Event Latency</span><span className="text-xl font-bold text-blue-400">~14ms</span></div>
-                <div className="p-3 border border-vscode-border bg-vscode-sidebar/5 rounded-sm"><span className="text-[9px] text-vscode-comment uppercase block">Active Streams</span><span className="text-xl font-bold text-vscode-highlight">Node_Live</span></div>
-                <div className="p-3 border border-vscode-border bg-vscode-sidebar/5 rounded-sm"><span className="text-[9px] text-vscode-comment uppercase block">Total Cycles</span><span className="text-xl font-bold text-vscode-text">{totalEvents * 12}</span></div>
+                <div className="p-3 border border-vscode-border bg-vscode-sidebar/5 rounded-sm"><span className="text-[12px] text-vscode-comment uppercase block">Core Integrity</span><span className="text-xl font-bold text-vscode-success">99.9%</span></div>
+                <div className="p-3 border border-vscode-border bg-vscode-sidebar/5 rounded-sm"><span className="text-[12px] text-vscode-comment uppercase block">Event Latency</span><span className="text-xl font-bold text-blue-400">~14ms</span></div>
+                <div className="p-3 border border-vscode-border bg-vscode-sidebar/5 rounded-sm"><span className="text-[12px] text-vscode-comment uppercase block">Active Streams</span><span className="text-xl font-bold text-vscode-highlight">Node_Live</span></div>
+                <div className="p-3 border border-vscode-border bg-vscode-sidebar/5 rounded-sm"><span className="text-[12px] text-vscode-comment uppercase block">Total Cycles</span><span className="text-xl font-bold text-vscode-text">{(totalEvents || 0) * 12}</span></div>
              </div>
           </div>
         </div>
         <div className="p-4 border border-vscode-border bg-vscode-sidebar/10 rounded flex items-center justify-between">
-            <div className="flex items-center gap-2 text-vscode-comment text-xs font-mono"><Zap size={14} className="text-yellow-500" /><span>TOTAL_SYSTEM_EVENTS_PROCESSED:</span></div>
-            <span className="text-2xl font-black text-vscode-success">{totalEvents}</span>
+            <div className="flex items-center gap-2 text-vscode-comment text-sm font-mono"><Zap size={14} className="text-yellow-500" /><span>TOTAL_SYSTEM_EVENTS_PROCESSED:</span></div>
+            <span className="text-2xl font-black text-vscode-success">{totalEvents || 0}</span>
         </div>
       </section>
     </div>

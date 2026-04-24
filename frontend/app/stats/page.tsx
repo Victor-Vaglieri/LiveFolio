@@ -8,7 +8,15 @@ const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'Victor Vaglieri';
 async function getUnifiedData() {
   try {
     const redisEvents = await redis.lrange('events:latest', 0, 99);
-    const events = redisEvents.map(e => JSON.parse(e));
+    const events = (Array.isArray(redisEvents) ? redisEvents : [])
+      .map((e) => {
+        try {
+          return e ? JSON.parse(e) : null;
+        } catch {
+          return null;
+        }
+      })
+      .filter((e) => e !== null);
 
     if (events.length < 20) {
       const res = await fetch(`https://api.github.com/search/commits?q=author:${GITHUB_USERNAME}&sort=author-date&order=desc&per_page=50`, {
@@ -86,13 +94,13 @@ export default async function StatsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Repo Activity - 2/3 width on large */}
         <section className="lg:col-span-2 p-6 border border-vscode-border rounded-sm bg-vscode-sidebar/5 space-y-8">
-          <h2 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-vscode-comment">
+          <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 text-vscode-comment">
             <BarChart3 size={14} /> Workload Distribution
           </h2>
           <div className="space-y-6">
             {Object.entries(repoStats).slice(0, 8).map(([name, count]) => (
               <div key={name} className="space-y-2 group">
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[17px]">
                   <span className="text-vscode-highlight group-hover:text-vscode-text transition-colors">{name}</span>
                   <span className="font-bold">{count} commits</span>
                 </div>
@@ -115,19 +123,19 @@ export default async function StatsPage() {
               </h2>
               <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-1">
-                    <span className="text-[10px] text-vscode-comment uppercase">Total Volume</span>
+                    <span className="text-[16px] text-vscode-comment uppercase">Total Volume</span>
                     <div className="text-3xl font-black text-vscode-text">{total}</div>
                  </div>
                  <div className="space-y-1">
-                    <span className="text-[10px] text-vscode-comment uppercase">Active Repos</span>
+                    <span className="text-[16px] text-vscode-comment uppercase">Active Repos</span>
                     <div className="text-3xl font-black text-vscode-text">{Object.keys(repoStats).length}</div>
                  </div>
                  <div className="space-y-1">
-                    <span className="text-[10px] text-vscode-comment uppercase">Efficiency</span>
+                    <span className="text-[16px] text-vscode-comment uppercase">Efficiency</span>
                     <div className="text-3xl font-black text-vscode-success">98.4%</div>
                  </div>
                  <div className="space-y-1">
-                    <span className="text-[10px] text-vscode-comment uppercase">Uptime</span>
+                    <span className="text-[16px] text-vscode-comment uppercase">Uptime</span>
                     <div className="text-3xl font-black text-blue-400">24/7</div>
                  </div>
               </div>
@@ -142,8 +150,8 @@ export default async function StatsPage() {
                     <Zap className="text-vscode-highlight" />
                  </div>
                  <div>
-                    <div className="text-sm font-bold text-vscode-text">Consistency King</div>
-                    <div className="text-[10px] text-vscode-comment">Maintained 10+ daily commits</div>
+                    <div className="text-[18px] font-bold text-vscode-text">Consistency King</div>
+                    <div className="text-[16px] text-vscode-comment">Maintained 10+ daily commits</div>
                  </div>
               </div>
            </div>
@@ -169,12 +177,12 @@ export default async function StatsPage() {
                         style={{ height: `${count > 0 ? Math.max(height, 8) : 0}%` }}
                       />
                       {count > 0 && (
-                        <span className="absolute top-1 text-[9px] font-bold text-vscode-text mix-blend-difference">
+                        <span className="absolute top-1 text-[16px] font-bold text-vscode-text mix-blend-difference">
                           {count}
                         </span>
                       )}
                    </div>
-                   <span className="text-[9px] text-vscode-comment font-bold">{day.toUpperCase()}</span>
+                   <span className="text-[15px] text-vscode-comment font-bold">{day.toUpperCase()}</span>
                 </div>
               )
            })}
