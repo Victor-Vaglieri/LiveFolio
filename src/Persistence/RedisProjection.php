@@ -37,6 +37,10 @@ class RedisProjection
     {
         $this->client->hIncrBy('stats:repos', $repo, 1);
         $this->client->hIncrBy('stats:authors', $author, 1);
+        $language = $payload['repository']['language'] ?? null;
+        if ($language) {
+            $this->client->hIncrBy('stats:languages', $language, 1);
+        }
 
         $eventData = [
             'type' => $eventType,
