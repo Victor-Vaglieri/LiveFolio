@@ -3,6 +3,8 @@
 # Iniciar o worker em segundo plano
 php bin/worker.php &
 
-# Iniciar o servidor usando a porta fornecida pelo Render (ou 8080 como fallback)
-# Usamos 'php-server' que é mais leve e flexível para ambientes de nuvem
-exec frankenphp php-server --port ${PORT:-8080}
+# Definir a porta para o FrankenPHP (O Render passa a porta na variável $PORT)
+export FRANKENPHP_HTTP_PORT=${PORT:-8080}
+
+# Iniciar o servidor
+exec frankenphp php-server public/index.php
