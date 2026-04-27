@@ -13,7 +13,8 @@ export default function GoalsPage() {
         "PostgreSQL Persistence (Supabase Pooler)", 
         "IPv4/IPv6 Dual-stack routing compatibility",
         "Rate Limiting per IP for Webhook protection",
-        "SSL/TLS Encryption for all database connections"
+        "SSL/TLS Encryption for all database connections",
+        "Language Skills auto-update from repository analysis"
       ] 
     },
     { 
@@ -27,21 +28,10 @@ export default function GoalsPage() {
       ] 
     },
     { 
-      title: "Real-time AI Analysis", 
-      status: "in-progress", 
-      tasks: [
-        "Automated PR Analysis via GPT-4", 
-        "Coding Patterns Detection (Clean Code vs Legacy)", 
-        "Language Skills auto-update from repository analysis"
-      ] 
-    },
-    { 
       title: "Advanced Tracking & Visibility", 
       status: "planned", 
       tasks: [
-        "Heatmaps for recruiter access patterns", 
-        "Downloadable dynamic CV (PDF generation)", 
-        "LinkedIn Auto-post on major project milestones"
+        "Downloadable dynamic CV (PDF generation)"
       ] 
     }
   ];

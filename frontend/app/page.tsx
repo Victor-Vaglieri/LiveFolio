@@ -204,13 +204,21 @@ export default async function HomePage({ searchParams }: { searchParams: { ref?:
           <div className="space-y-4">
              <h3 className="text-sm font-bold text-vscode-comment uppercase tracking-widest flex items-center gap-2"><BarChart3 size={14} /> System Throughput / Repo</h3>
              <div className="space-y-3">
-                {Object.entries(repoStats).slice(0, 6).map(([name, count]) => (
-                  <div key={name} className="space-y-1">
-                    <div className="flex justify-between text-[14px] font-mono opacity-80"><span>{name}</span><span className="text-vscode-highlight">{count} ops</span></div>
-                    <div className="h-1.5 bg-vscode-sidebar rounded-full overflow-hidden"><div className="h-full bg-vscode-highlight transition-all" style={{ width: `${(Number(count)/Math.max(totalEvents, 1))*100}%` }} /></div>
+                {Object.entries(repoStats).length > 0 ? (
+                  Object.entries(repoStats).slice(0, 6).map(([name, count]) => (
+                    <div key={name} className="space-y-1">
+                      <div className="flex justify-between text-[14px] font-mono opacity-80"><span>{name}</span><span className="text-vscode-highlight">{count} ops</span></div>
+                      <div className="h-1.5 bg-vscode-sidebar rounded-full overflow-hidden"><div className="h-full bg-vscode-highlight transition-all" style={{ width: `${(Number(count)/Math.max(totalEvents, 1))*100}%` }} /></div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-4 text-center border border-dashed border-vscode-border rounded bg-vscode-sidebar/5">
+                    <p className="text-vscode-comment text-xs italic">Awaiting telemetry data from GitHub...</p>
+                    <p className="text-[10px] text-vscode-comment/50 mt-1 uppercase tracking-widest">Connect your first webhook to begin</p>
                   </div>
-                ))}
+                )}
              </div>
+
           </div>
           <div className="space-y-4">
              <h3 className="text-sm font-bold text-vscode-comment uppercase tracking-widest flex items-center gap-2"><Activity size={14} /> System Health & Tech Metrics</h3>
