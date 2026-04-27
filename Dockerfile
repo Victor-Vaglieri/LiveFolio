@@ -14,3 +14,12 @@ COPY . .
 # Instalar dependências do PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
+# Dar permissão de execução ao entrypoint
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 80
+EXPOSE 443
+
+ENTRYPOINT ["entrypoint.sh"]
+
