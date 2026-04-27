@@ -14,12 +14,14 @@ COPY . .
 # Instalar dependências do PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Dar permissão de execução ao entrypoint
+# Dar permissão e corrigir quebras de linha do Windows
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN apk add --no-cache libcap \
+    && sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh \
+    && setcap -r /usr/local/bin/frankenphp
 
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
 
 ENTRYPOINT ["entrypoint.sh"]
 
