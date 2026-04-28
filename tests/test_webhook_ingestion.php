@@ -29,9 +29,8 @@ $ch = curl_init($webhookUrl);
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-// TODO verificar isso aqui - idealmente o certificado deveria ser válido, mas para facilitar o desenvolvimento local, vamos ignorar a verificação de SSL.
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // <--- Ignorar verificação de certificado
-curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // <--- Ignorar verificação de host
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
     'X-GitHub-Event: push',
