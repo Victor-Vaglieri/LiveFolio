@@ -6,38 +6,43 @@ export const dynamic = 'force-dynamic';
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'Victor Vaglieri';
 
 async function getUnifiedData() {
-  try {
-    const redisEvents = await redis.lrange('events:latest', 0, 99);
-    const events = (Array.isArray(redisEvents) ? redisEvents : [])
-      .map((e) => {
-        try {
-          return e ? JSON.parse(e) : null;
-        } catch {
-          return null;
-        }
-      })
-      .filter((e) => e !== null);
+  const events: any[] = [];
 
-    if (events.length < 20) {
-      const res = await fetch(`https://api.github.com/search/commits?q=author:${GITHUB_USERNAME}&sort=author-date&order=desc&per_page=50`, {
-        headers: { 'Accept': 'application/vnd.github.cloak-preview' },
-        next: { revalidate: 3600 }
+  try {
+    // 1. Tentar carregar do Redis
+    const redisEvents = await redis.lrange('events:latest', 0, 99);
+    if (redisEvents && redisEvents.length > 0) {
+      redisEvents.forEach((e: string | null) => {
+        try { if (e) events.push(JSON.parse(e)); } catch {}
       });
-      if (res.ok) {
-        const ghData = await res.json();
-        ghData.items.forEach((item: any) => {
-          events.push({
-            repo: item.repository.full_name,
-            author: item.author?.login || GITHUB_USERNAME,
-            timestamp: new Date(item.commit.author.date).getTime() / 1000,
-            message: item.commit.message
-          });
-        });
-      }
     }
+
+    // 2. Se o Redis tiver pouco dado, buscar do Supabase
+    if (events.length < 20) {
+      const { db } = await import('@/lib/db');
+      const res = await db.query(`
+        SELECT repo, author, created_at as timestamp 
+        FROM github_events 
+        ORDER BY created_at DESC 
+        LIMIT 100
+      `);
+
+      res.rows.forEach(row => {
+        // Evitar duplicatas simples se o dado já veio do Redis
+        const exists = events.some(e => e.timestamp === new Date(row.timestamp).getTime() / 1000);
+        if (!exists) {
+          events.push({
+            repo: row.repo,
+            author: row.author,
+            timestamp: new Date(row.timestamp).getTime() / 1000
+          });
+        }
+      });
+    }
+
     const repoStats: Record<string, number> = {};
     const dailyStats: Record<string, number> = {};
-    
+
     events.forEach(event => {
       repoStats[event.repo] = (repoStats[event.repo] || 0) + 1;
       const date = new Date(event.timestamp * 1000).toLocaleDateString('en-US', { weekday: 'short' });
@@ -46,10 +51,10 @@ async function getUnifiedData() {
 
     return { repoStats, dailyStats, total: events.length, events };
   } catch (e) {
+    console.error('Stats UnifiedData Error:', e);
     return { repoStats: {}, dailyStats: {}, total: 0, events: [] };
   }
 }
-
 export default async function StatsPage() {
   const { repoStats, dailyStats, total } = await getUnifiedData();
 

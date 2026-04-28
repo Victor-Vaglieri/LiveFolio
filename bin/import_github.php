@@ -15,8 +15,6 @@ echo "[INFO] Iniciando importação histórica para o usuário: $username\n";
 try {
     $pdo = Connection::get();
     $repository = new EventRepository($pdo);
-    
-    // Obter a URL do Redis (padrão para o serviço do docker se não houver env)
     $redisUrl = getenv('REDIS_URL') ?: 'redis://redis:6379';
     
     $projection = new RedisProjection($redisUrl);

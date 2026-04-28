@@ -1,32 +1,11 @@
 import { redis } from '@/lib/redis';
+import { db } from '@/lib/db';
 import { trackVisit } from '@/lib/tracking';
 import { Terminal, FolderGit2, Cpu } from 'lucide-react';
-import { getRepoStack } from '@/lib/stacks';
 
 export const dynamic = 'force-dynamic';
 
-const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'Victor Vaglieri';
-
-async function getGitHubCommits() {
-  try {
-    const res = await fetch(`https://api.github.com/search/commits?q=author:${GITHUB_USERNAME}&sort=author-date&order=desc&per_page=30`, {
-      headers: { 'Accept': 'application/vnd.github.cloak-preview' },
-      next: { revalidate: 3600 }
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.items.map((item: any) => ({
-      repo: item.repository.full_name,
-      author: item.author?.login || GITHUB_USERNAME,
-      branch: 'main',
-      timestamp: new Date(item.commit.author.date).getTime() / 1000,
-      message: item.commit.message,
-      type: 'PUSH_HISTORICO'
-    }));
-  } catch (e) {
-    return [];
-  }
-}
+const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'Victor-Vaglieri';
 
 async function getRepoLanguages(repoFullName: string) {
   try {
@@ -42,21 +21,40 @@ async function getRepoLanguages(repoFullName: string) {
 }
 
 async function getLatestEvents() {
+  const events: any[] = [];
   try {
-    const events = await redis.lrange('events:latest', 0, 49);
-    if (!Array.isArray(events)) return [];
+    // 1. Redis
+    const redisEvents = await redis.lrange('events:latest', 0, 49);
+    if (redisEvents && redisEvents.length > 0) {
+      redisEvents.forEach((e: string | null) => {
+        try { if (e) events.push(JSON.parse(e)); } catch {}
+      });
+    }
+
+    // 2. Supabase Fallback
+    if (events.length < 10) {
+      const res = await db.query(`
+        SELECT repo, author, branch, payload->>'message' as message, created_at as timestamp 
+        FROM github_events 
+        ORDER BY created_at DESC 
+        LIMIT 50
+      `);
+      
+      res.rows.forEach(row => {
+        events.push({
+          repo: row.repo,
+          author: row.author,
+          branch: row.branch || 'main',
+          message: row.message || 'Commit via LiveFolio',
+          timestamp: new Date(row.timestamp).getTime() / 1000,
+          type: 'DATABASE_HISTORY'
+        });
+      });
+    }
     
-    return events
-      .map((e) => {
-        try {
-          return e ? JSON.parse(e) : null;
-        } catch (err) {
-          return null;
-        }
-      })
-      .filter((e) => e !== null);
+    return events;
   } catch (e) {
-    console.error('[ERRO] Falha ao buscar eventos do Redis:', e);
+    console.error('[ERRO] Falha ao buscar eventos:', e);
     return [];
   }
 }
@@ -69,19 +67,10 @@ export default async function ActivityPage({
   const source = searchParams.ref || searchParams.source || null;
   await trackVisit(source);
 
-  const redisEvents = await getLatestEvents();
-  const ghCommits = redisEvents.length < 10 ? await getGitHubCommits() : [];
-  
-  const allEvents = [...redisEvents, ...ghCommits].reduce((acc: any[], current: any) => {
-    const isDuplicate = acc.find(item => item.message === current.message);
-    if (!isDuplicate) acc.push(current);
-    return acc;
-  }, []).sort((a, b) => b.timestamp - a.timestamp);
+  const allEvents = await getLatestEvents();
   
   const groupedEvents = allEvents.reduce((acc: any, event: any) => {
-    if (!acc[event.repo]) {
-      acc[event.repo] = [];
-    }
+    if (!acc[event.repo]) acc[event.repo] = [];
     acc[event.repo].push(event);
     return acc;
   }, {});
@@ -91,7 +80,7 @@ export default async function ActivityPage({
       <div className="space-y-2 mb-8 border-b border-vscode-border pb-6">
         <div className="flex items-center gap-2 text-vscode-comment">
           <Terminal size={16} />
-          <span>// activity.log - Monitoramento em tempo real (Híbrido Redis + GitHub)</span>
+          <span>// activity.log - Monitoramento em tempo real (Híbrido Redis + Supabase)</span>
         </div>
         <div className="pl-6 space-y-2">
           <p className="text-[13px] text-vscode-text/70">
@@ -137,8 +126,8 @@ export default async function ActivityPage({
                     <div className="flex flex-col gap-0.5 w-full">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-vscode-success font-bold">[{new Date(event.timestamp * 1000).toLocaleTimeString()}]</span>
-                        <span className={`${event.type === 'PUSH_HISTORICO' ? 'text-vscode-comment' : 'text-vscode-text'} font-semibold`}>
-                          {event.type === 'PUSH_HISTORICO' ? 'HISTORICO' : 'PUSH'}
+                        <span className={`${event.type === 'DATABASE_HISTORY' ? 'text-vscode-comment' : 'text-vscode-text'} font-semibold`}>
+                          {event.type === 'DATABASE_HISTORY' ? 'HISTORY' : 'PUSH'}
                         </span>
                         <span className="text-vscode-string">"{event.author}"</span>
                         <span className="text-vscode-text">em</span>

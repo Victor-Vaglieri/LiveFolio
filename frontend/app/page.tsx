@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { GraduationCap, Code, Server, Database, Wrench, BarChart3, PieChart, FileCheck, ExternalLink, Zap, Sparkles, Activity } from "lucide-react";
 import { redis } from '@/lib/redis';
+import { db } from '@/lib/db';
 import { trackVisit } from '@/lib/tracking';
 import { getAllSettings, initSettingsTable } from '@/lib/settings';
 
@@ -84,34 +85,54 @@ async function getSkillsFromREADME() {
 }
 
 async function getUnifiedData(): Promise<RepoStats> {
+  const events: any[] = [];
+  
   try {
-    const redisEvents = await redis.lrange('events:latest', 0, 99);
-    const events = (Array.isArray(redisEvents) ? redisEvents : [])
-      .map((e) => {
-        try {
-          return e ? JSON.parse(e) : null;
-        } catch {
-          return null;
-        }
-      })
-      .filter((e) => e !== null);
-
-    if (events.length < 15) {
-      const res = await fetch(`https://api.github.com/search/commits?q=author:${GITHUB_USERNAME}&sort=author-date&order=desc&per_page=50`, {
-        headers: { 'Accept': 'application/vnd.github.cloak-preview' },
-        next: { revalidate: 3600 }
+    // 1. Tentar carregar do Redis (Cache de eventos recentes)
+    const redisEvents = await redis.lrange('events:latest', 0, 49);
+    if (redisEvents && redisEvents.length > 0) {
+      redisEvents.forEach((e: string | null) => {
+        try { if (e) events.push(JSON.parse(e)); } catch {}
       });
-      if (res.ok) {
-        const ghData = await res.json();
-        ghData.items?.forEach((item: any) => {
-          events.push({ repo: item.repository.full_name, author: item.author?.login || GITHUB_USERNAME, timestamp: new Date(item.commit.author.date).getTime() / 1000, message: item.commit.message });
-        });
-      }
     }
+
+    // 2. Se o Redis estiver vazio ou tiver poucos eventos, buscar do Supabase (Nosso histórico real)
+    if (events.length < 10) {
+      const res = await db.query(`
+        SELECT repo, author, created_at as timestamp 
+        FROM github_events 
+        ORDER BY created_at DESC 
+        LIMIT 50
+      `);
+      
+      res.rows.forEach(row => {
+        // Normalizar formato para o frontend
+        events.push({
+          repo: row.repo,
+          author: row.author,
+          timestamp: new Date(row.timestamp).getTime() / 1000
+        });
+      });
+    }
+
+    // 3. Fallback final apenas se TUDO falhar (Dados de segurança)
+    if (events.length === 0) {
+      return {
+        repoStats: { "Victor-Vaglieri/LiveFolio": 1 },
+        total: 1
+      };
+    }
+
     const repoStats: Record<string, number> = {};
-    events.forEach(event => { if (event.repo) repoStats[event.repo] = (repoStats[event.repo] || 0) + 1; });
+    events.forEach(event => { 
+      if (event.repo) repoStats[event.repo] = (repoStats[event.repo] || 0) + 1; 
+    });
+    
     return { repoStats, total: events.length };
-  } catch (e) { return { repoStats: {}, total: 0 }; }
+  } catch (e) { 
+    console.error('UnifiedData Error:', e);
+    return { repoStats: {}, total: 0 }; 
+  }
 }
 
 export default async function HomePage({ searchParams }: { searchParams: { ref?: string; source?: string } }) {
