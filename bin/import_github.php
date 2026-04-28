@@ -8,7 +8,7 @@ use App\Database\Connection;
 use App\Persistence\EventRepository;
 use App\Persistence\RedisProjection;
 
-$username = getenv('GITHUB_USERNAME') ?: 'victor'; 
+$username = getenv('GITHUB_USERNAME') ?: 'Victor-Vaglieri'; 
 
 echo "[INFO] Iniciando importação histórica para o usuário: $username\n";
 
@@ -23,11 +23,18 @@ try {
     exit(1);
 }
 
-$apiUrl = "https://api.github.com/users/$username/events/public";
+$apiUrl = "https://api.github.com/users/$username/events/public?per_page=100";
+$token = getenv('GITHUB_TOKEN');
+
+$headers = "User-Agent: LiveFolio-App\r\n";
+if ($token) {
+    $headers .= "Authorization: token $token\r\n";
+}
+
 $options = [
     'http' => [
         'method' => "GET",
-        'header' => "User-Agent: LiveFolio-App\r\n"
+        'header' => $headers
     ]
 ];
 
@@ -48,6 +55,16 @@ foreach ($events as $event) {
         $author = $event['actor']['login'];
         $branch = $event['payload']['ref'] ?? 'refs/heads/main';
         
+        if (empty($event['payload']['commits']) && isset($event['payload']['head'])) {
+            $sha = $event['payload']['head'];
+            $commitUrl = "https://api.github.com/repos/$repo/commits/$sha";
+            $commitResponse = @file_get_contents($commitUrl, false, $context);
+            if ($commitResponse) {
+                $commitData = json_decode($commitResponse, true);
+                $event['payload']['commits'][0]['message'] = $commitData['commit']['message'] ?? 'No message found';
+            }
+        }
+
         try {
             $repository->save('push', $repo, $author, $branch, $event);
             $projection->updateProjections('push', $repo, $author, $branch, $event);
