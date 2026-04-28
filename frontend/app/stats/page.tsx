@@ -6,57 +6,82 @@ export const dynamic = 'force-dynamic';
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'Victor Vaglieri';
 
 async function getUnifiedData() {
-  const events: any[] = [];
-
   try {
-    // 1. Tentar carregar do Redis
-    const redisEvents = await redis.lrange('events:latest', 0, 99);
-    if (redisEvents && redisEvents.length > 0) {
-      redisEvents.forEach((e: string | null) => {
-        try { if (e) events.push(JSON.parse(e)); } catch {}
-      });
-    }
+    const { db } = await import('@/lib/db');
+    const res = await db.query(`
+      SELECT repo, author, payload, created_at
+      FROM github_events 
+      ORDER BY COALESCE(payload->>'created_at', payload->'head_commit'->>'timestamp', created_at::text) DESC 
+      LIMIT 100
+    `);
 
-    // 2. Se o Redis tiver pouco dado, buscar do Supabase
-    if (events.length < 20) {
-      const { db } = await import('@/lib/db');
-      const res = await db.query(`
-        SELECT repo, author, created_at as timestamp 
-        FROM github_events 
-        ORDER BY created_at DESC 
-        LIMIT 100
-      `);
+    const events = res.rows.map(row => {
+      const payload = row.payload;
+      const eventTime = payload.created_at || 
+                        (payload.head_commit && payload.head_commit.timestamp) || 
+                        row.created_at;
 
-      res.rows.forEach(row => {
-        // Evitar duplicatas simples se o dado já veio do Redis
-        const exists = events.some(e => e.timestamp === new Date(row.timestamp).getTime() / 1000);
-        if (!exists) {
-          events.push({
-            repo: row.repo,
-            author: row.author,
-            timestamp: new Date(row.timestamp).getTime() / 1000
-          });
-        }
-      });
-    }
+      return {
+        repo: row.repo,
+        author: row.author,
+        payload: row.payload,
+        timestamp: new Date(eventTime).getTime() / 1000
+      };
+    });
 
     const repoStats: Record<string, number> = {};
     const dailyStats: Record<string, number> = {};
 
-    events.forEach(event => {
-      repoStats[event.repo] = (repoStats[event.repo] || 0) + 1;
-      const date = new Date(event.timestamp * 1000).toLocaleDateString('en-US', { weekday: 'short' });
-      dailyStats[date] = (dailyStats[date] || 0) + 1;
+    const now = new Date();
+    const last7Days = new Array(7).fill(0).map((_, i) => {
+      const d = new Date();
+      d.setDate(now.getDate() - (6 - i));
+      return d.getUTCFullYear() + '-' + (d.getUTCMonth() + 1) + '-' + d.getUTCDate();
+    });
+    
+    const dateToDay: Record<string, string> = {};
+    const daysArr = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    last7Days.forEach(dateStr => {
+      const parts = dateStr.split('-');
+      const d = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+      dateToDay[dateStr] = daysArr[d.getUTCDay()];
+      dailyStats[dateToDay[dateStr]] = 0;
     });
 
-    return { repoStats, dailyStats, total: events.length, events };
+    if (events.length === 0) {
+       const emptyOrderedStats = last7Days.map(dateStr => ({
+         day: dateToDay[dateStr],
+         count: 0
+       }));
+       return { repoStats: { "Victor-Vaglieri/LiveFolio": 1 }, orderedDailyStats: emptyOrderedStats, total: 1, events: [] };
+    }
+
+    events.forEach(event => {
+      repoStats[event.repo] = (repoStats[event.repo] || 0) + 1;
+      
+      const eventDate = new Date(event.timestamp * 1000);
+      const dateKey = eventDate.getUTCFullYear() + '-' + (eventDate.getUTCMonth() + 1) + '-' + eventDate.getUTCDate();
+      
+      if (dateToDay[dateKey]) {
+        const dayName = dateToDay[dateKey];
+        dailyStats[dayName] = (dailyStats[dayName] || 0) + 1;
+      }
+    });
+    const orderedDailyStats = last7Days.map(dateStr => ({
+      day: dateToDay[dateStr],
+      count: dailyStats[dateToDay[dateStr]] || 0
+    }));
+
+    return { repoStats, orderedDailyStats, total: events.length, events };
   } catch (e) {
     console.error('Stats UnifiedData Error:', e);
-    return { repoStats: {}, dailyStats: {}, total: 0, events: [] };
+    return { repoStats: {}, orderedDailyStats: [], total: 0, events: [] };
   }
 }
 export default async function StatsPage() {
-  const { repoStats, dailyStats, total } = await getUnifiedData();
+  const { repoStats, orderedDailyStats, total } = await getUnifiedData();
+  const maxCount = Math.max(...orderedDailyStats.map(d => d.count), 1);
 
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -166,16 +191,14 @@ export default async function StatsPage() {
       {/* Activity Pulse - Fixed visibility */}
       <section className="p-6 border border-vscode-border rounded-sm bg-vscode-sidebar/5">
         <h2 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-vscode-comment mb-8">
-           <Zap size={14} className="text-yellow-500" /> Activity Pulse (Commits per Weekday)
+           <Zap size={14} className="text-yellow-500" /> Activity Pulse (Last 7 Days)
         </h2>
         <div className="flex items-end justify-around h-32 gap-3 px-2">
-           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
-              const count = dailyStats[day] || 0;
-              // Calcula altura relativa garantindo um mínimo para visibilidade se houver dados
-              const height = total > 0 ? (count / Math.max(...Object.values(dailyStats), 1)) * 100 : 0;
+           {orderedDailyStats.map(({ day, count }, idx) => {
+              const height = (count / maxCount) * 100;
               
               return (
-                <div key={day} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
+                <div key={idx} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
                    <div className="w-full bg-vscode-highlight/5 border border-vscode-border/30 relative flex items-end justify-center overflow-hidden" style={{ height: `100%` }}>
                       <div 
                         className="w-full bg-vscode-highlight shadow-[0_0_15px_rgba(0,122,204,0.3)] transition-all duration-1000 group-hover:bg-vscode-text" 

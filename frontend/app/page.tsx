@@ -85,41 +85,26 @@ async function getSkillsFromREADME() {
 }
 
 async function getUnifiedData(): Promise<RepoStats> {
-  const events: any[] = [];
-  
   try {
-    // 1. Tentar carregar do Redis (Cache de eventos recentes)
-    const redisEvents = await redis.lrange('events:latest', 0, 49);
-    if (redisEvents && redisEvents.length > 0) {
-      redisEvents.forEach((e: string | null) => {
-        try { if (e) events.push(JSON.parse(e)); } catch {}
-      });
-    }
+    // 1. Supabase é a Fonte de Verdade (Histórico Completo)
+    const res = await db.query(`
+      SELECT repo, author, created_at as timestamp 
+      FROM github_events 
+      ORDER BY created_at DESC 
+      LIMIT 100
+    `);
 
-    // 2. Se o Redis estiver vazio ou tiver poucos eventos, buscar do Supabase (Nosso histórico real)
-    if (events.length < 10) {
-      const res = await db.query(`
-        SELECT repo, author, created_at as timestamp 
-        FROM github_events 
-        ORDER BY created_at DESC 
-        LIMIT 50
-      `);
-      
-      res.rows.forEach(row => {
-        // Normalizar formato para o frontend
-        events.push({
-          repo: row.repo,
-          author: row.author,
-          timestamp: new Date(row.timestamp).getTime() / 1000
-        });
-      });
-    }
+    const events = res.rows.map(row => ({
+      repo: row.repo,
+      author: row.author,
+      timestamp: new Date(row.timestamp).getTime() / 1000
+    }));
 
-    // 3. Fallback final apenas se TUDO falhar (Dados de segurança)
+    // 2. Se o banco estiver vazio, não mostramos "Awaiting", usamos um dado real do seu perfil
     if (events.length === 0) {
       return {
-        repoStats: { "Victor-Vaglieri/LiveFolio": 1 },
-        total: 1
+        repoStats: { "Victor-Vaglieri/LiveFolio": 1, "Victor-Vaglieri/AI-DE-S": 1 },
+        total: 2
       };
     }
 
@@ -131,7 +116,7 @@ async function getUnifiedData(): Promise<RepoStats> {
     return { repoStats, total: events.length };
   } catch (e) { 
     console.error('UnifiedData Error:', e);
-    return { repoStats: {}, total: 0 }; 
+    return { repoStats: { "Victor-Vaglieri/LiveFolio": 1 }, total: 1 }; 
   }
 }
 
