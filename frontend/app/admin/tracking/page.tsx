@@ -1,7 +1,8 @@
 import { db } from '@/lib/db';
-import { Table, BarChart2, ShieldCheck, Settings } from 'lucide-react';
+import { Table, BarChart2, ShieldCheck, Settings, Target } from 'lucide-react';
 import StatusManager from '@/components/StatusManager';
 import { getAllSettings, initSettingsTable } from '@/lib/settings';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,13 @@ export default async function AdminTracking({
             <h1 className="text-4xl font-bold tracking-tight text-vscode-highlight">Admin Dashboard</h1>
             <p className="text-vscode-comment mt-2">Visitor insights and system settings</p>
           </div>
+          <Link 
+            href={`/admin/cv?secret=${secret}`}
+            className="flex items-center gap-2 bg-vscode-highlight text-black px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity"
+          >
+            <Target size={20} />
+            Gerenciar CV ATS
+          </Link>
         </header>
 
         {/* System Settings */}
