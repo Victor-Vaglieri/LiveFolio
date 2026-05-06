@@ -29,9 +29,12 @@ export default function GoalsPage() {
     },
     { 
       title: "Advanced Tracking & Visibility", 
-      status: "planned", 
+      status: "completed", 
       tasks: [
-        "Downloadable dynamic CV (PDF generation)"
+        "Downloadable dynamic CV (PDF generation)",
+        "Automated CV Skill Extraction & Tagging",
+        "CV Management Base (CRUD with filtering)",
+        "Customizable Skills Dictionary with automated matching"
       ] 
     }
   ];
