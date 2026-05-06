@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { PDFParse } from 'pdf-parse';
+import pdf from 'pdf-parse-fork';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
@@ -19,9 +22,10 @@ export async function POST(req: Request) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    console.log(`[CV UPLOAD] Arquivo recebido: ${file.name}, Tamanho: ${buffer.length} bytes`);
 
-    const parser = new PDFParse({ data: buffer });
-    const pdfData = await parser.getText();
+    const pdfData = await pdf(buffer);
+    console.log(`[CV UPLOAD] Texto extraído com sucesso. Caracteres: ${pdfData.text.length}`);
     const extractedText = pdfData.text.toLowerCase();
 
     const cvResult = await db.query(
