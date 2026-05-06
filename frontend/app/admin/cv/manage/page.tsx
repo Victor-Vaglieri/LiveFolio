@@ -106,8 +106,8 @@ function CVManageContent() {
       {isLoading ? (
         <div className="flex justify-center p-12"><Loader2 className="animate-spin w-8 h-8 text-vscode-highlight" /></div>
       ) : (
-        <div className="grid gap-4">
-          {cvs.length === 0 && <p className="text-center text-vscode-comment py-12">Nenhum currículo encontrado.</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {cvs.length === 0 && <p className="text-center text-vscode-comment py-12 col-span-full">Nenhum currículo encontrado.</p>}
           
           {cvs.map(cv => (
             <div key={cv.id} className="border border-vscode-border rounded-lg bg-vscode-sidebar/10 overflow-hidden">
