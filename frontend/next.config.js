@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['pdf-parse', 'pdfjs-dist'],
   images: {
     remotePatterns: [
       {
