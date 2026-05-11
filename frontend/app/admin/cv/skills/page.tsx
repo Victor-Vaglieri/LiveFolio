@@ -24,7 +24,6 @@ function SkillsDictionaryContent() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
 
-  // Gera uma cor aleatória em formato Hex
   const generateRandomColor = () => {
     const letters = '0123456789ABCDEF';
     let color = '#';
