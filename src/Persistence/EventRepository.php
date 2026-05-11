@@ -46,4 +46,16 @@ class EventRepository
         
         echo "[SUCCESS] Evento salvo no PostgreSQL com sucesso\n";
     }
+
+    public function existsByCommit(string $sha): bool
+    {
+        $sql = "SELECT 1 FROM github_events 
+                WHERE payload->>'after' = :sha 
+                   OR payload->'head_commit'->>'id' = :sha 
+                   OR payload->'payload'->>'head' = :sha 
+                LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':sha' => $sha]);
+        return (bool) $stmt->fetchColumn();
+    }
 }
