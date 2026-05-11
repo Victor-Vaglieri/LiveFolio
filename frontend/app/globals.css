@@ -66,3 +66,35 @@ body {
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+@layer components {
+  .page-container {
+    @apply mx-auto py-8 space-y-12 font-sans text-vscode-text;
+  }
+  
+  .page-container *::selection {
+    background-color: rgba(57, 148, 188, 0.3);
+  }
+  
+  .section-container {
+    @apply space-y-6;
+  }
+  
+  .section-title {
+    @apply text-2xl font-bold border-b border-vscode-border pb-2 text-vscode-highlight;
+  }
+  
+  .card {
+    @apply p-4 border border-vscode-border rounded transition-colors;
+    background-color: rgba(25, 26, 27, 0.05);
+  }
+
+  .card:hover {
+    background-color: rgba(25, 26, 27, 0.2);
+  }
+  
+  .metric-card {
+    @apply p-3 border border-vscode-border rounded-sm;
+    background-color: rgba(25, 26, 27, 0.05);
+  }
+}

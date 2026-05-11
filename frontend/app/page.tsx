@@ -86,21 +86,31 @@ async function getSkillsFromREADME() {
 
 async function getUnifiedData(): Promise<RepoStats> {
   try {
-    // 1. Supabase é a Fonte de Verdade (Histórico Completo)
     const res = await db.query(`
-      SELECT repo, author, created_at as timestamp 
+      SELECT repo, author, payload, created_at as timestamp 
       FROM github_events 
       ORDER BY created_at DESC 
       LIMIT 100
     `);
 
-    const events = res.rows.map(row => ({
-      repo: row.repo,
-      author: row.author,
-      timestamp: new Date(row.timestamp).getTime() / 1000
-    }));
+    const events = res.rows.map(row => {
+      let commitCount = 1;
+      try {
+        const payload = row.payload || {};
+        const commits = payload.commits || (payload.payload && payload.payload.commits) || [];
+        if (Array.isArray(commits) && commits.length > 0) {
+          commitCount = commits.length;
+        }
+      } catch (e) {}
 
-    // 2. Se o banco estiver vazio, não mostramos "Awaiting", usamos um dado real do seu perfil
+      return {
+        repo: row.repo,
+        author: row.author,
+        commitCount: commitCount,
+        timestamp: new Date(row.timestamp).getTime() / 1000
+      };
+    });
+
     if (events.length === 0) {
       return {
         repoStats: { "Victor-Vaglieri/LiveFolio": 1, "Victor-Vaglieri/AI-DE-S": 1 },
@@ -109,11 +119,15 @@ async function getUnifiedData(): Promise<RepoStats> {
     }
 
     const repoStats: Record<string, number> = {};
+    let totalCommits = 0;
     events.forEach(event => { 
-      if (event.repo) repoStats[event.repo] = (repoStats[event.repo] || 0) + 1; 
+      if (event.repo) {
+        repoStats[event.repo] = (repoStats[event.repo] || 0) + event.commitCount;
+        totalCommits += event.commitCount;
+      }
     });
     
-    return { repoStats, total: events.length };
+    return { repoStats, total: totalCommits };
   } catch (e) { 
     console.error('UnifiedData Error:', e);
     return { repoStats: { "Victor-Vaglieri/LiveFolio": 1 }, total: 1 }; 
@@ -143,7 +157,7 @@ export default async function HomePage({ searchParams }: { searchParams: { ref?:
     { category: "Frontend", items: readmeSkills.Frontend, icon: <Code size={18} className="text-blue-400" />, color: "border-blue-500/40 bg-blue-500/5 text-blue-300 shadow-blue-500/10" },
     { category: "Backend", items: readmeSkills.Backend, icon: <Server size={18} className="text-green-400" />, color: "border-green-500/40 bg-green-500/5 text-green-300 shadow-green-500/10" },
     { category: "Databases", items: readmeSkills.Databases, icon: <Database size={18} className="text-red-400" />, color: "border-red-500/40 bg-red-500/5 text-red-300 shadow-red-500/10" },
-    { category: "Infrastructure", items: readmeSkills.Infrastructure, icon: <Wrench size={18} className="text-orange-400" />, color: "border-orange-500/40 bg-orange-500/5 text-orange-300 shadow-orange-500/10" },
+    { category: "Infrastructure & Tools", items: readmeSkills.Infrastructure, icon: <Wrench size={18} className="text-orange-400" />, color: "border-orange-500/40 bg-orange-500/5 text-orange-300 shadow-orange-500/10" },
   ];
 
   return (
