@@ -96,8 +96,8 @@ export default async function ActivityPage({
   }, {});
 
   return (
-    <div className="max-w-5xl mx-auto py-4 font-mono text-vscode-text">
-      <div className="space-y-2 mb-8 border-b border-vscode-border pb-6">
+    <div className="max-w-5xl page-container font-mono">
+      <div className="section-container border-b border-vscode-border pb-6">
         <div className="flex items-center gap-2 text-vscode-comment">
           <Terminal size={16} />
           <span>// activity.log - Real-time Telemetry (Supabase Source)</span>
@@ -110,7 +110,7 @@ export default async function ActivityPage({
         </div>
       </div>
 
-      <div className="space-y-12">
+      <div className="section-container">
         {Object.keys(groupedEvents).length === 0 && (
           <p className="text-vscode-comment italic text-sm text-center">Nenhum log persistente detectado.</p>
         )}
@@ -118,7 +118,7 @@ export default async function ActivityPage({
         {await Promise.all(Object.entries(groupedEvents).map(async ([repo, repoEvents]: [string, any]) => {
           const stack = await getRepoLanguages(repo);
           return (
-            <section key={repo} className="space-y-4">
+            <section key={repo} className="section-container">
               <div className="bg-vscode-sidebar/30 p-3 rounded border border-vscode-border space-y-3">
                 <div className="flex items-center gap-2 text-vscode-highlight">
                   <FolderGit2 size={18} />
