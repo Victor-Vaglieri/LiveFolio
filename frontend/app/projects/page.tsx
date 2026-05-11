@@ -52,8 +52,8 @@ export default async function ProjectsPage({
   )).filter((p): p is ProjectData => p !== null);
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 space-y-10 font-sans text-vscode-text">
-      <header className="space-y-2 border-b border-vscode-border pb-6">
+    <div className="max-w-6xl page-container font-sans">
+      <header className="section-container border-b border-vscode-border pb-6">
         <div className="flex items-center gap-2 text-vscode-comment font-mono">
           <FolderGit2 size={16} />
           <span>// projects.md - Curated work and open source contributions</span>

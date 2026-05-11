@@ -96,8 +96,8 @@ export default async function StatsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 font-mono space-y-12">
-      <header className="space-y-2 border-b border-vscode-border pb-6 flex justify-between items-end">
+    <div className="max-w-6xl page-container font-mono">
+      <header className="section-container border-b border-vscode-border pb-6 flex justify-between items-end">
         <div>
           <div className="flex items-center gap-2 text-vscode-comment">
             <Activity size={16} />
@@ -127,7 +127,7 @@ export default async function StatsPage() {
           <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 text-vscode-comment">
             <BarChart3 size={14} /> Workload Distribution
           </h2>
-          <div className="space-y-6">
+          <div className="section-container">
             {Object.entries(repoStats).slice(0, 8).map(([name, count]) => (
               <div key={name} className="space-y-2 group">
                 <div className="flex justify-between text-[17px]">
@@ -171,7 +171,7 @@ export default async function StatsPage() {
               </div>
            </div>
 
-           <div className="p-6 border border-vscode-border bg-vscode-sidebar/10 rounded-sm">
+           <div className="metric-card">
               <h2 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-vscode-comment mb-4">
                 <Award size={14} /> Weekly Milestone
               </h2>
