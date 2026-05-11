@@ -15,6 +15,7 @@ interface MatchResult {
 interface Skill {
   id: string;
   name: string;
+  search_terms: string[];
 }
 
 function CVMatchContent() {
@@ -26,6 +27,7 @@ function CVMatchContent() {
   const [results, setResults] = useState<MatchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [textoVaga, setTextoVaga] = useState('');
 
   useEffect(() => {
     if (!secret) return;
@@ -37,22 +39,44 @@ function CVMatchContent() {
   }, [secret]);
 
   const handleMatch = async () => {
-    if (selectedSkillIds.length === 0) return;
+    if (selectedSkillIds.length === 0) {
+      setResults([]);
+      setHasSearched(false);
+      return;
+    }
     setIsLoading(true);
     setHasSearched(true);
     try {
-      const res = await fetch('/api/cv/match', {
+      const resposta = await fetch('/api/cv/match', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ skillIds: selectedSkillIds, secret }),
       });
-      const data = await res.json();
-      if (Array.isArray(data)) setResults(data);
-    } catch (err) {
+      const dados = await resposta.json();
+      if (Array.isArray(dados)) setResults(dados);
+    } catch (erro) {
       alert('Erro ao processar match');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    handleMatch();
+  }, [selectedSkillIds]);
+
+  const extrairSkills = () => {
+    if (!textoVaga.trim()) return;
+    
+    const textoMinusculo = textoVaga.toLowerCase();
+    const idsEncontrados = allSkills
+      .filter(skill => {
+        const termos = skill.search_terms || [];
+        return termos.some(term => textoMinusculo.includes(term.toLowerCase()));
+      })
+      .map(skill => skill.id);
+    
+    setSelectedSkillIds(idsEncontrados);
   };
 
   if (!secret) {
@@ -72,7 +96,34 @@ function CVMatchContent() {
       </header>
 
       <section className="bg-vscode-sidebar/20 p-6 rounded-lg border border-vscode-border space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-vscode-comment">Tecnologias Requisitadas</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-vscode-comment">Extrator de Skills da Vaga</h2>
+        <textarea
+          value={textoVaga}
+          onChange={(e) => setTextoVaga(e.target.value)}
+          placeholder="Cole aqui a descrição da vaga para extrair as skills automaticamente..."
+          className="w-full h-32 bg-vscode-bg border border-vscode-border rounded p-3 text-sm focus:outline-none focus:border-vscode-highlight transition-colors resize-none"
+        />
+        <button
+          onClick={extrairSkills}
+          disabled={!textoVaga.trim()}
+          className="bg-vscode-sidebar hover:bg-vscode-highlight hover:text-black px-4 py-2 rounded border border-vscode-border transition-all text-sm font-bold disabled:opacity-50"
+        >
+          Extrair Skills
+        </button>
+      </section>
+
+      <section className="bg-vscode-sidebar/20 p-6 rounded-lg border border-vscode-border space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-vscode-comment">Tecnologias Selecionadas</h2>
+          {selectedSkillIds.length > 0 && (
+            <button 
+              onClick={() => setSelectedSkillIds([])}
+              className="text-[10px] uppercase font-bold text-red-400 hover:text-red-300 transition-colors"
+            >
+              Limpar Seleção
+            </button>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
           {allSkills.map(skill => {
             const isSelected = selectedSkillIds.includes(skill.id);
@@ -91,15 +142,6 @@ function CVMatchContent() {
             );
           })}
         </div>
-
-        <button 
-          onClick={handleMatch}
-          disabled={isLoading || selectedSkillIds.length === 0}
-          className="w-full bg-vscode-highlight text-black font-bold py-3 rounded-lg flex justify-center items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
-        >
-          {isLoading ? <Loader2 className="animate-spin" /> : <Search size={20} />}
-          {isLoading ? "Buscando..." : "Encontrar Melhores Currículos"}
-        </button>
       </section>
 
       {hasSearched && (
