@@ -54,6 +54,11 @@ foreach ($events as $event) {
         $repo = $event['repo']['name'];
         $author = $event['actor']['login'];
         $branch = $event['payload']['ref'] ?? 'refs/heads/main';
+        $sha = $event['payload']['head'] ?? null;
+
+        if ($sha && $repository->existsByCommit($sha)) {
+            continue;
+        }
         
         if (empty($event['payload']['commits']) && isset($event['payload']['head'])) {
             $sha = $event['payload']['head'];
