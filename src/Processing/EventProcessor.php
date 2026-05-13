@@ -32,7 +32,7 @@ class EventProcessor
             return;
         }
         $repo = $data['repository']['full_name'] ?? 'unknown';
-        $author = $data['pusher']['name'] ?? 'unknown';
+        $author = $data['sender']['login'] ?? $data['pusher']['name'] ?? 'unknown';
         $branch = $data['ref'] ?? 'unknown';
 
         echo "[SUCCESS] Dados extraídos: Repo: {$repo} | Autor: {$author} | Branch: {$branch}\n";
