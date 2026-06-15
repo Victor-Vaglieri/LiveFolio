@@ -182,7 +182,7 @@ export default async function HomePage({ searchParams }: { searchParams: { ref?:
             </div>
           </div>
         </div>
-        <div className="bg-vscode-sidebar/20 p-4 rounded border-l-4 border-vscode-highlight text-vscode-text/90 italic leading-relaxed">"{bio}"</div>
+        <div className="bg-vscode-sidebar/20 p-4 rounded border-l-4 border-vscode-highlight text-vscode-text/90 italic leading-relaxed whitespace-pre-wrap">"{bio}"</div>
       </section>
 
       <section className="space-y-6">
