@@ -9,7 +9,7 @@ export default function GoalsPage() {
       status: "completed", 
       tasks: [
         "Redis Stream Ingestion (Upstash)", 
-        "PHP 8.3 Worker processing real-time events", 
+        "Java 21 / Spring Boot processing real-time events", 
         "PostgreSQL Persistence (Supabase Pooler)", 
         "IPv4/IPv6 Dual-stack routing compatibility",
         "Rate Limiting per IP for Webhook protection",
