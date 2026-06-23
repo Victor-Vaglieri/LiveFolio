@@ -11,6 +11,7 @@ services:
       - FRANKENPHP_CONFIG=worker ./public/index.php
       - FRANKENPHP_WORKER=1
       - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
       - REDIS_URL=${REDIS_URL}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
@@ -31,6 +32,28 @@ services:
     volumes:
       - ./:/app
     environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REDIS_URL=${REDIS_URL}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+
+  java-backend:
+    build: ./java-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./java-backend:/app
+    environment:
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
       - REDIS_URL=${REDIS_URL}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
